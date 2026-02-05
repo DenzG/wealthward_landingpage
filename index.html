@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wealth Wards - Your Financial Guardian</title>
+    <title>Wealth Wards - Your Financial Guardian.</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="shortcut icon" href="images/icon1.png"  width="32" height="32" type="image/x-icon">
 </head>
@@ -67,6 +67,10 @@
                     <img src="./images/shield.png" alt="Financial shield">
                 </div>
             </div>
+              <svg id="circlehead" viewBox="0 0 900 300">
+                <polyline id="line" />
+                <circle id="head" r="2" />
+            </svg>
         </div>
     </section>
 
@@ -113,6 +117,121 @@
                 }
             });
         });
+
+
+        // Animated SVG in Hero Section
+        
+        const points = [
+            [50, 250],
+            [150, 180],
+            [250, 220],
+            [350, 150],
+            [450, 190],
+            [550, 120],
+            [650, 160],
+            [750, 80],
+            ];
+
+        const polyline = document.getElementById("line");
+        const head = document.getElementById("head");
+
+        const speed = 0.02;
+        const maxTrailLength = 25;
+        const fadeAfterTurns = 4;
+        const restartDelay = 2000; // ⏱ 2 seconds
+
+        let segment, t, trail, phase;
+        let rafId;
+        
+        let restartCount = 0;
+        const maxRestarts = 1;
+
+        function reset() {
+        segment = 0;
+        t = 0;
+        trail = [];
+        phase = "draw";
+        head.style.opacity = 1;
+        polyline.setAttribute("points", "");
+        }
+
+        function animate() {
+
+        
+        // ───── DRAW PHASE ─────
+        if (phase === "draw") {
+            if (segment >= points.length - 1) {
+            phase = "dissolve";
+            return requestAnimationFrame(animate);
+            }
+
+            const [x1, y1] = points[segment];
+            const [x2, y2] = points[segment + 1];
+
+            const x = x1 + (x2 - x1) * t;
+            const y = y1 + (y2 - y1) * t;
+
+            trail.push({ x, y });
+
+            if (segment >= fadeAfterTurns && trail.length > maxTrailLength) {
+            trail.shift();
+            }
+
+            polyline.setAttribute(
+            "points",
+            trail.map(p => `${p.x},${p.y}`).join(" ")
+            );
+
+            head.setAttribute("cx", x);
+            head.setAttribute("cy", y);
+
+            t += speed;
+            if (t >= 1) {
+            t = 0;
+            segment++;
+            }
+
+            rafId = requestAnimationFrame(animate);
+        }
+
+        // ───── DISSOLVE PHASE ─────
+        else if (phase === "dissolve") {
+            if (trail.length === 0) {
+            head.style.opacity = 0;
+
+            setTimeout(() => {
+                restartCount++;
+                console.log(`Restarting animation: ${restartCount}`);
+                if (restartCount > maxRestarts) return;
+                cancelAnimationFrame(rafId);
+                reset();
+                animate();
+            }, restartDelay);
+
+            return;
+            }
+
+            trail.shift();
+
+            polyline.setAttribute(
+            "points",
+            trail.map(p => `${p.x},${p.y}`).join(" ")
+            );
+
+            rafId = requestAnimationFrame(animate);
+        }
+    }
+
+    reset();
+    const element = document.getElementById('circlehead');
+    element.style.width = '100vw';
+    element.style.height = '100vh';
+    element.style.position = 'absolute';
+    element.style.top = '0';
+    element.style.left = '0';
+    element.style.margin = '0';
+    element.style.padding = '0';
+    animate();
     </script>
 </body>
 </html>
